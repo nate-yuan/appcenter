@@ -1,3 +1,5 @@
 *.o
 moc_*
 tmp/
+appcenter
+Makefile
