@@ -5,9 +5,8 @@
 #include <QStackedLayout>
 #include <QSystemTrayIcon>
 
-class IconArea;
+class AppWidget;
 class QAction;
-class Pager;
 
 class Dashboard : public QWidget{
     Q_OBJECT
@@ -23,11 +22,11 @@ public:
     void resizeEvent(QResizeEvent * event);
 
   private:
+    void setGeoProper();
     QSystemTrayIcon *tray;
     QAction *quitAction;
     QAction *hideAction;
     QAction *showAction;
-    IconArea *iarea;
-    Pager *pager;
+    AppWidget *awidget;
 };
 #endif

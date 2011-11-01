@@ -1,3 +1,5 @@
+#include <QRect>
+#include <QDesktopWidget>
 #include <QPalette>
 #include <QEvent>
 #include <QLabel>
@@ -12,6 +14,7 @@
 #include <QApplication>
 #include <QAction>
 #include <QMenu>
+#include <iostream>
 
 #ifdef LINUX_X11
 #include <X11/Xlib.h>
@@ -20,14 +23,12 @@
 #endif
 
 #include "dashboard.h"
-#include "iconarea.h"
-#include "pager.h"
+#include "appwidget.h"
 
 Dashboard::Dashboard(QWidget *parent)
     :QWidget(parent, 
-        Qt::WindowStaysOnBottomHint | Qt::FramelessWindowHint)
+             Qt::WindowStaysOnBottomHint | Qt::FramelessWindowHint | Qt::Tool)
 {
-
 #ifdef LINUX_X11
     Atom net_wm_state_skip_taskbar = XInternAtom(QX11Info::display(), 
                                         "_NET_WM_STATE_SKIP_TASKBAR", False);
@@ -40,68 +41,18 @@ Dashboard::Dashboard(QWidget *parent)
     XChangeProperty(QX11Info::display(), winId(), net_wm_state, 
                     XA_ATOM, 32, PropModeAppend, 
                     (unsigned char *)&net_wm_state_skip_pager, 1);
+
 #endif
 
-    QGridLayout *layout;
-    QSpacerItem *vSpacer1;
-    QSpacerItem *vSpacer2;
-    QSpacerItem *vSpacer3;
-    QSpacerItem *vSpacer4;
-    QPushButton *lButton;
-    QPushButton *rButton;
 
-    layout = new QGridLayout(this);
-    layout->setSpacing(0);
-    layout->setContentsMargins(0, 0, 0, 0);
+    QVBoxLayout *vLayout;
 
-    vSpacer1 = new QSpacerItem(20, 190, QSizePolicy::Minimum, QSizePolicy::Expanding);
-    layout->addItem(vSpacer1, 0, 0, 1, 1);
+    vLayout = new QVBoxLayout(this);
+    vLayout->setSpacing(0);
+    vLayout->setContentsMargins(0, 0, 0, 10);
 
-    iarea = new IconArea(this);
-    layout->addWidget(iarea, 0, 1, 4, 1);
-
-    lButton = new QPushButton(this);
-    lButton->setText("<");
-    sizePolicy.setHeightForWidth(lButton->sizePolicy().hasHeightForWidth());
-    lButton->setSizePolicy(sizePolicy);
-    lButton->setMinimumSize(QSize(15, 50));
-    lButton->setMaximumSize(QSize(15, 50));
-    lButton->setStyleSheet(\
-        "QPushButton{border-width:2;border-style:outset;border-radius:5px;}");
-    layout->addWidget(lButton, 1, 0, 1, 1);
-
-    rButton = new QPushButton(this);
-    rButton->setText(">");
-    sizePolicy.setHeightForWidth(rButton->sizePolicy().hasHeightForWidth());
-    rButton->setSizePolicy(sizePolicy);
-    rButton->setMinimumSize(QSize(15, 20));
-    rButton->setMaximumSize(QSize(15, 50));
-    rButton->setStyleSheet(\
-        "QPushButton{border-width:2;border-style:outset;border-radius:5px;}");
-    layout->addWidget(rButton, 1, 2, 1, 1);
-    vSpacer2 = new QSpacerItem(20, 222, QSizePolicy::Minimum, QSizePolicy::Expanding);
-    layout->addItem(vSpacer2, 2, 0, 2, 1);
-    vSpacer3 = new QSpacerItem(20, 190, QSizePolicy::Minimum, QSizePolicy::Expanding);
-    layout->addItem(vSpacer3, 2, 2, 1, 1);
-
-    pager = new Pager(this); 
-    sizePolicy.setHorizontalPolicy(QSizePolicy::Fixed);
-    sizePolicy.setVerticalPolicy(QSizePolicy::Fixed);
-    sizePolicy.setHeightForWidth(pager->sizePolicy().hasHeightForWidth());
-    pager->setSizePolicy(sizePolicy);
-    pager->setSizePolicy(sizePolicy);
-    layout->addWidget(pager, 3, 2, 1, 1);
-
-
-    vLayout->addLayout(hLayout);
-
-
-    QHBoxLayout *bottomLayout = new QHBoxLayout();
-    //pager->setMaximumSize(QSize(300, 40));
-    //pager->setMinimumSize(QSize(800, 40));
-    //bottomLayout->addWidget(pager, Qt::AlignRight | Qt::AlignJustify);
-
-    //vLayout->addLayout(bottomLayout, Qt::AlignRight);
+    awidget = new AppWidget(this);
+    vLayout->addWidget(awidget);
 
     quitAction = new QAction("Quit", this);
     showAction = new QAction("Show", this);
@@ -117,14 +68,22 @@ Dashboard::Dashboard(QWidget *parent)
     tray->setContextMenu(trayMenu);
     tray->show();
 
+    
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-    connect(showAction, SIGNAL(triggered()), this, SLOT(showMaximized()));
+    connect(showAction, SIGNAL(triggered()), this, SLOT(show()));
     connect(hideAction, SIGNAL(triggered()), this, SLOT(hide()));
     connect(tray, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
         this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
 
-    connect(lButton, SIGNAL(clicked()), iarea, SLOT(slideLeft()));
-    connect(rButton, SIGNAL(clicked()), iarea, SLOT(slideRight()));
+    setGeoProper();
+}
+
+void Dashboard::setGeoProper()
+{
+    QDesktopWidget *d = QApplication::desktop();
+    QRect r = d->availableGeometry();
+    setGeometry(0, 0, r.width(), r.height());
+	setFixedSize(r.width(), r.height());
 }
 
 void Dashboard::iconActivated(QSystemTrayIcon::ActivationReason)
@@ -143,10 +102,11 @@ void Dashboard::closeEvent(QCloseEvent *event)
 }
 
 void Dashboard::resizeEvent(QResizeEvent *event)
-{
-    QPixmap background("pics/bg.png");
+{ QPixmap background("images/bg2.jpg");
     QPixmap resizeBackgroud=background.scaled(event->size());
     QPalette palette;
     palette.setBrush(backgroundRole(), QBrush(resizeBackgroud));
     setPalette(palette);
 }
+
+

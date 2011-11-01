@@ -19,11 +19,36 @@ LIBS += -lX11
 TRANSLATIONS = appcenter.ts
 #RESOURCES += res.qrc
 
-HEADERS += src/dashboard.h \
-           src/pager.h \
-           src/iconarea.h
+HEADERS += src/appwidget.h \
+           src/constants.h \
+           src/dashboard.h \
+           src/localapps.h \
+           src/client/center.h \
+           src/client/applist.h \
+           src/client/appnode.h \
+           src/client/center.h \
+           src/client/itemdelegate.h \
+           src/client/itemmodel.h \
+           src/client/packageWidget.h \
+           src/client/pictureframe.h \
+           src/client/rftabbar.h \
+           src/client/rftitlebar.h \
+           src/client/tableview.h \
+           src/client/widget.h
 
-SOURCES += src/main.cpp \
-           src/iconarea.cpp \
-           src/pager.cpp \
-           src/dashboard.cpp
+SOURCES += src/appwidget.cpp \
+           src/dashboard.cpp \
+           src/localapps.cpp \
+           src/main.cpp \
+           src/client/applist.cpp \
+           src/client/appnode.cpp \
+           src/client/center.cpp \
+           src/client/itemdelegate.cpp \
+           src/client/itemmodel.cpp \
+           src/client/packageWidget.cpp \
+           src/client/pictureframe.cpp \
+           src/client/rftabbar.cpp \
+           src/client/rftitlebar.cpp \
+           src/client/tableview.cpp \
+           src/client/widget.cpp
+
