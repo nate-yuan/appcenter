@@ -23,9 +23,6 @@ AppWidget::AppWidget(QWidget * parent)
     setDropIndicatorShown(true);
     setFlow(QListView::TopToBottom);
 
-    //_center = new AppCenter();
-    //_center->hide();
-
     _local = new LocalAppList(LOCAL_DBFILE);
     for (int i = 0; i < _local->count(); i++) {
         QListWidgetItem *appItem = new QListWidgetItem(this);
@@ -43,12 +40,8 @@ void AppWidget::runApp(QListWidgetItem *item)
     if (!la)
         return;
     if (la->execname() == "/") {
-        qDebug() << "fuck";
-        if (_center)
-            _center->show();
-        else {
+        if (!_center)
             _center = new AppCenter();
-            _center->show();
-        }
+        _center->show();
     }
 }

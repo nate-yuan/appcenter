@@ -10,6 +10,8 @@
 AppCenter::AppCenter(QWidget *parent)
     :QWidget(parent)
 {
+    setFixedSize(902, 580);
+    setWindowIcon(QIcon("images/applications-other.png"));
 	RFTitleBar* titleBar = new RFTitleBar;
 	titleBar->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
 
@@ -28,12 +30,12 @@ AppCenter::AppCenter(QWidget *parent)
 	tmp->setPalette(palette);
 	tmp->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
-	rightLayout = new QHBoxLayout;
-	rightLayout->addWidget(pWidget);
+	stackedLayout = new QStackedLayout;
+	stackedLayout->addWidget(pWidget);
 	pWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
 	QHBoxLayout *mainLayout = new QHBoxLayout(tmp);
-	mainLayout->addLayout(rightLayout);
+	mainLayout->addLayout(stackedLayout);
 	tmp->setLayout(mainLayout);
 
 

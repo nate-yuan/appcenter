@@ -17,7 +17,7 @@ signals:
 protected:
 	void resizeEvent(QResizeEvent * event);
 private:
-	QHBoxLayout * rightLayout;
+	QStackedLayout * stackedLayout;
     PackageWidget * pWidget;
 };
 #endif

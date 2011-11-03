@@ -24,7 +24,6 @@ HEADERS += src/appwidget.h \
            src/dashboard.h \
            src/localapps.h \
            src/client/center.h \
-           src/client/applist.h \
            src/client/appnode.h \
            src/client/center.h \
            src/client/itemdelegate.h \
@@ -40,7 +39,6 @@ SOURCES += src/appwidget.cpp \
            src/dashboard.cpp \
            src/localapps.cpp \
            src/main.cpp \
-           src/client/applist.cpp \
            src/client/appnode.cpp \
            src/client/center.cpp \
            src/client/itemdelegate.cpp \
