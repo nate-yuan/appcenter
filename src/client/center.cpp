@@ -2,23 +2,27 @@
 #include <QHBoxLayout>
 #include <QListWidget>
 #include <QVBoxLayout>
-#include "rftabbar.h"
-#include "rftitlebar.h"
+
+#include "tabbar.h"
+#include "titlebar.h"
 #include "center.h"
 #include "packageWidget.h"
+#include "detailWidget.h"
 
 AppCenter::AppCenter(QWidget *parent)
     :QWidget(parent)
 {
     setFixedSize(902, 580);
     setWindowIcon(QIcon("images/applications-other.png"));
-	RFTitleBar* titleBar = new RFTitleBar;
+	TitleBar* titleBar = new TitleBar;
 	titleBar->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
 
 	pWidget = new PackageWidget;
     pWidget->setPictureFrameVisible(true);
 
-	RFTabBar* leftBar = new RFTabBar;
+    dWidget = new DetailWidget;
+
+	TabBar* leftBar = new TabBar;
 	leftBar->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
 
 	QWidget *tmp=new QWidget;
@@ -32,12 +36,13 @@ AppCenter::AppCenter(QWidget *parent)
 
 	stackedLayout = new QStackedLayout;
 	stackedLayout->addWidget(pWidget);
+    stackedLayout->addWidget(dWidget);
+    stackedLayout->setCurrentIndex(0);
 	pWidget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 
 	QHBoxLayout *mainLayout = new QHBoxLayout(tmp);
 	mainLayout->addLayout(stackedLayout);
 	tmp->setLayout(mainLayout);
-
 
 	QVBoxLayout* leftvlayout = new QVBoxLayout;
 	QLabel* logo = new QLabel("");
@@ -70,62 +75,24 @@ AppCenter::AppCenter(QWidget *parent)
 	setMinimumWidth(902);
 	setMinimumHeight(580);
 
-	connect(leftBar,SIGNAL(currentChanged(int)),this,SLOT(changeCurrentView(int)));
+	connect(leftBar,SIGNAL(currentChanged(int)),pWidget,SLOT(showCurrent(int)));
+	connect(leftBar,SIGNAL(currentChanged(int)),this,SIGNAL(clearSearch()));
 
 	connect(this, SIGNAL(clearSearch()), titleBar, SLOT(clearSearch()));
-
 	connect(pWidget, SIGNAL(clearSearch()), titleBar, SLOT(clearSearch()));
 
 	connect(pWidget, SIGNAL(searchChanged(const QString&)),
 			titleBar, SLOT(setSearch(const QString&)));
-
 	connect(titleBar, SIGNAL(searchChanged(const QString&)),
-			this, SLOT(onTextChanaged(const QString&)));
+			pWidget, SIGNAL(search(const QString&)));
 
-    //setWindowFlags(windowFlags() | Qt::WindowStaysOnBottomHint | Qt::FramelessWindowHint);
-    //setWindowFlags(Qt::WStyle_NoBorder | Qt::WStyle_Customize);
     showMaximized ();
-
 }
 
-AppCenter::~AppCenter()
-{}
-
-void AppCenter::changeCurrentView(int index)
+AppCenter::~AppCenter() 
 {
-	emit clearSearch();
-	pWidget->tableView->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    switch(index) {
-    case 0:
-        pWidget->setPictureFrameVisible(true);
-        pWidget->setButtonsVisible(true);
-        pWidget->tableView->proxy()->filterPkgStatus(-1);
-	    pWidget->tableView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        break;
-    case 1:
-        pWidget->setPictureFrameVisible(false);
-        pWidget->setButtonsVisible(true);
-        pWidget->tableView->proxy()->filterPkgStatus(-1);
-        break;
-    case 2:
-        pWidget->setPictureFrameVisible(false);
-        pWidget->setButtonsVisible(false);
-        pWidget->tableView->proxy()->filterPkgStatus(2);
-        pWidget->tableView->proxy()->filterPkgClass(-1);
-        break;
-    case 3:
-        pWidget->setPictureFrameVisible(false);
-        pWidget->setButtonsVisible(false);
-        pWidget->tableView->proxy()->filterPkgStatus(1);
-        pWidget->tableView->proxy()->filterPkgClass(-1);
-    }
 }
 
-void AppCenter::onTextChanaged(const QString& text)
-{
-	qDebug() << text;
-    pWidget->tableView->proxy()->filterPkgSearch(text);
-}
 
 void AppCenter::resizeEvent(QResizeEvent *event)
 {

@@ -7,37 +7,35 @@
 class PackageWidget : public QScrollArea {
   Q_OBJECT
   public:
-    TableView *tableView;
 	PackageWidget(QWidget * parent = NULL);
-	~PackageWidget();
+	~PackageWidget(){};
 	void createGroupButton();
     void setPictureFrameVisible(bool vis);
     void setButtonsVisible(bool vis);
-    void search(const QString &text);
   public slots:
     void setCurrentButton(int);
+    void showCurrent(int);
   protected:
   signals:
     void clearSearch();
+    void search(const QString & text);
     void searchChanged (const QString & text);
   private:
     void allResize();
     PictureFrame * pictureFrame;
     QWidget *buttonWidget;
-    QButtonGroup *buttonGroup;
-    QPushButton *networkApp;
-    QPushButton *mediaApp;
-    QPushButton *gameApp;
-    QPushButton *graphicsApp;
-    QPushButton *wordsApp;
-    QPushButton *devApp;
-    QPushButton *hardwareApp;
-    QPushButton *professionalApp;
-    QPushButton *otherApp;
+    TableView *tableView;
 
-    QPushButton *currentButton;
+    QButtonGroup *buttonGroup;
+    QPushButton *all;
+    QPushButton *professional;
+    QPushButton *network;
+    QPushButton *media;
+    QPushButton *driver;
+    QPushButton *develop;
+    QPushButton *other;
+
     QTimer      *timer;
     QWidget     *_frame;
-    QStringList classifyList;
 };
 #endif

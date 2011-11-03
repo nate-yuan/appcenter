@@ -28,13 +28,51 @@ TableView::TableView(QWidget * parent) :QTableView(parent)
     _proxy->setDynamicSortFilter(true);
     setModel(_proxy);
     setItemDelegate(_delegate);
-    //_proxy->filterPkgStatus(1);
-    /*
-    QString searchstr = QString("eog");
-    _proxy->setFilterRegExp(QRegExp(searchstr, Qt::CaseInsensitive));
-    _proxy->setFilterKeyColumn(1);
-    */
     rearrange();
+}
+
+void TableView::classChange(int id)
+{
+    _class = static_cast<PackageClass>(id);
+    _proxy->filterPkgClass(_class);
+}
+
+void TableView::search(const QString &text)
+{
+    _proxy->filterPkgSearch(text);
+}
+
+void TableView::showRecommended()
+{
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    _proxy->filterPkgClass(_class);
+    _proxy->filterPkgStatus(ALLSTATUS);
+    _proxy->getRecommended(true);
+}
+
+void TableView::showNormal()
+{
+	setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    _proxy->filterPkgClass(_class);
+    _proxy->filterPkgStatus(ALLSTATUS);
+    _proxy->getRecommended(false);
+}
+
+void TableView::showUpdates()
+{
+	setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    _proxy->filterPkgClass(ALLCLASS);
+    _proxy->filterPkgStatus(OLD);
+    _proxy->getRecommended(false);
+}
+
+void TableView::showInstalled()
+{
+	setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    _proxy->filterPkgClass(ALLCLASS);
+    _proxy->filterPkgStatus(INSTALLED);
+    _proxy->getRecommended(false);
+    _proxy->getAllInstalled(true);
 }
 
 void TableView::rearrange()
@@ -63,8 +101,4 @@ void TableView::mouseMoveEvent(QMouseEvent * event)
 int TableView::viewHeight()
 {
 	return	_model->rowCount() * VERTICALHEIGHT;
-}
-
-void TableView::search(const QString &txt)
-{
 }

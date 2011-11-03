@@ -1,28 +1,12 @@
-/*
- *
- *  Portions Copyright (C) 2009 wind (lvlisong@redflag-linux.com)
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
-#include "rftabbar.h"
 #include <QIcon>
 #include <QPainter>
 #include <QMouseEvent>
 #include <QPropertyAnimation>
 #include <QDebug>
-RFTabBar::RFTabBar(QWidget* parent) :
+
+#include "tabbar.h"
+
+TabBar::TabBar(QWidget* parent) :
 	QTabBar(parent)
 	, _animProgress(1.0)
 	, _hoveredTabIndex(-1)
@@ -46,13 +30,12 @@ RFTabBar::RFTabBar(QWidget* parent) :
 	addTab(QIcon("images/warehouse.png"), tr("Warehouse"));
 	addTab(QIcon("images/updates.png"), tr("Updates"));
 	addTab(QIcon("images/uninstall"), tr("Uninstall"));
-	//addTab(QIcon("images/community"), tr("Community"));
 
 	_tabbg = new QImage("images/tabbg.png");
 
 }
 
-QSize RFTabBar::tabSizeHint(int index) const
+QSize TabBar::tabSizeHint(int index) const
 {
 	const QFontMetrics metrics(font());
 	const QSize textSize = metrics.size(Qt::TextHideMnemonic, tabText(index));
@@ -64,9 +47,8 @@ QSize RFTabBar::tabSizeHint(int index) const
 
 	return QSize(width, height);
 }
-//#define RIGHT_ROUNDED
 #ifndef RIGHT_ROUNDED
-QPainterPath RFTabBar::tabPath(const QRectF &_r)
+QPainterPath TabBar::tabPath(const QRectF &_r)
 {
 	const qreal radius = 6;
 	QPainterPath path;
@@ -86,7 +68,7 @@ QPainterPath RFTabBar::tabPath(const QRectF &_r)
 }
 #else //RIGHT_ROUNDED
 
-QPainterPath RFTabBar::tabPath(const QRectF &_r)
+QPainterPath TabBar::tabPath(const QRectF &_r)
 {
 	const qreal radius = 6;
 	QPainterPath path;
@@ -111,7 +93,7 @@ QPainterPath RFTabBar::tabPath(const QRectF &_r)
 }
 #endif //RIGHT_ROUNDED
 
-void RFTabBar::paintEvent(QPaintEvent *event)
+void TabBar::paintEvent(QPaintEvent *event)
 {
 	Q_UNUSED(event)
 		QPainter painter(this);
@@ -157,13 +139,13 @@ void RFTabBar::paintEvent(QPaintEvent *event)
 	}
 }
 
-void RFTabBar::leaveEvent(QEvent *event)
+void TabBar::leaveEvent(QEvent *event)
 {
 	Q_UNUSED(event)
 		_hoveredTabIndex = -1;
 }
 
-void RFTabBar::mouseMoveEvent(QMouseEvent *event)
+void TabBar::mouseMoveEvent(QMouseEvent *event)
 {
 	_hoveredTabIndex = tabAt(event->pos());
 	if (_switchOnHover && _hoveredTabIndex > -1 && _hoveredTabIndex != currentIndex()) {
@@ -173,7 +155,7 @@ void RFTabBar::mouseMoveEvent(QMouseEvent *event)
 }
 
 
-void RFTabBar::resizeEvent(QResizeEvent* event)
+void TabBar::resizeEvent(QResizeEvent* event)
 {
 	QTabBar::resizeEvent(event);
 	_currentAnimRect = tabRect(currentIndex());
@@ -183,7 +165,7 @@ void RFTabBar::resizeEvent(QResizeEvent* event)
 	update();
 }
 
-void RFTabBar::dragEnterEvent(QDragEnterEvent *event)
+void TabBar::dragEnterEvent(QDragEnterEvent *event)
 {
 	_hoveredTabIndex = tabAt(event->pos());
 	_tabSwitchTimer.stop();
@@ -192,7 +174,7 @@ void RFTabBar::dragEnterEvent(QDragEnterEvent *event)
 }
 
 
-void RFTabBar::storeLastIndex()
+void TabBar::storeLastIndex()
 {
 	// if first run
 	if (_lastIndex[0] == -1) {
@@ -202,12 +184,12 @@ void RFTabBar::storeLastIndex()
 	_lastIndex[1] = currentIndex();
 }
 
-int RFTabBar::lastIndex() const
+int TabBar::lastIndex() const
 {
     return _lastIndex[0];
 }
 
-void RFTabBar::setCurrentIndexWithoutAnimation(int index)
+void TabBar::setCurrentIndexWithoutAnimation(int index)
 {
     disconnect(this, SIGNAL(currentChanged(int)), this, SLOT(startAnimation()));
     setCurrentIndex(index);
@@ -217,7 +199,7 @@ void RFTabBar::setCurrentIndexWithoutAnimation(int index)
 }
 
 
-void RFTabBar::switchToHoveredTab()
+void TabBar::switchToHoveredTab()
 {
 	if (_hoveredTabIndex < 0 || _hoveredTabIndex == currentIndex())
 		return;
@@ -228,13 +210,13 @@ void RFTabBar::switchToHoveredTab()
 		setCurrentIndexWithoutAnimation(_hoveredTabIndex);
 }
 
-void RFTabBar::animationFinished()
+void TabBar::animationFinished()
 {
 	_currentAnimRect = QRect();
 	update();
 }
 
-void RFTabBar::startAnimation()
+void TabBar::startAnimation()
 {
 	storeLastIndex();
 
@@ -252,13 +234,13 @@ void RFTabBar::startAnimation()
 	animation->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
-qreal RFTabBar::animValue() const
+qreal TabBar::animValue() const
 {
     return _animProgress;
 }
 
 
-void RFTabBar::setAnimValue(qreal value)
+void TabBar::setAnimValue(qreal value)
 {
 	if ((_animProgress = value) == 1.0) {
 		animationFinished();

@@ -6,7 +6,7 @@ class Widget:public QWidget
 		Q_OBJECT
 		public:
 		Widget(QWidget *parent=NULL);
-		~Widget();
+		~Widget() {};
 		void composeImage();
 		public slots:
 				void timedone();

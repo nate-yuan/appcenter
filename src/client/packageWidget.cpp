@@ -1,36 +1,5 @@
 #include "packageWidget.h"
 #include "tableview.h"
-#include <QCheckBox>
-class MyCheckBox : public QCheckBox {
-	Q_OBJECT
-  public:
-	MyCheckBox( const QString & text, QWidget * parent = 0) :
-		QCheckBox(text, parent){}
-
-  protected:
-	virtual void paintEvent(QPaintEvent* event);
-
-};
-
-void MyCheckBox::paintEvent(QPaintEvent* event)
-{
-	Q_UNUSED(event)
-
-	QPainter painter(this);
-	QRect rt = childrenRect();
-	painter.setRenderHint(QPainter::Antialiasing);
-
-	painter.setPen(QPen(Qt::black));
-	painter.fillRect(rt, QBrush(QColor(255, 255, 255, 255)));
-	rt = rt.adjusted(1, 1, -2, -1);
-	painter.setRenderHint(QPainter::Antialiasing, false);
-	painter.setPen(QPen(QColor(100,100,100)));
-	painter.drawRect(rt);
-}
-
-
-/****************************************************************************/
-
 
 PackageWidget::PackageWidget(QWidget *parent): QScrollArea(parent)
 {
@@ -57,12 +26,38 @@ PackageWidget::PackageWidget(QWidget *parent): QScrollArea(parent)
 	_frame->setMinimumWidth(706);
 	_frame->setMaximumWidth(706);
 
+	connect(buttonGroup,SIGNAL(buttonClicked(int)),tableView,SLOT(classChange(int)));
 	connect(buttonGroup,SIGNAL(buttonClicked(int)),this,SLOT(setCurrentButton(int)));
-	connect(tableView,SIGNAL(finished()),this,SLOT(onFinished()));
 
 	connect(pictureFrame, SIGNAL(searchChanged(const QString&)), this,
 			SIGNAL(searchChanged(const QString&)));
+    connect(this, SIGNAL(search(const QString&)), tableView, SLOT(search(const QString&)));
     allResize();
+}
+
+void PackageWidget::showCurrent(int index)
+{
+    bool hasPic = false;
+    bool hasBut = true;
+
+    switch(index) {
+    case 0:
+        hasPic = true;
+        tableView->showRecommended();
+        break;
+    case 1:
+        tableView->showNormal();
+        break;
+    case 2:
+        hasBut = false;
+        tableView->showUpdates();
+        break;
+    case 3:
+        hasBut = false;
+        tableView->showInstalled();
+    }
+    setPictureFrameVisible(hasPic);
+    setButtonsVisible(hasBut);
 }
 
 void PackageWidget::setButtonsVisible(bool vis)
@@ -72,71 +67,50 @@ void PackageWidget::setButtonsVisible(bool vis)
         buttonGroup->buttons()[i]->setVisible(vis);
 }
 
-PackageWidget::~PackageWidget()
-{
-}
-
 void PackageWidget::createGroupButton()
 {
-	networkApp=new QPushButton(tr("NetworkApp"));
-	mediaApp=new QPushButton(tr("MediaApp"));
-	gameApp=new QPushButton(tr("GameApp"));
-	graphicsApp=new QPushButton(tr("GraphicsApp"));
-	wordsApp=new QPushButton(tr("WordsApp"));
-	devApp=new QPushButton(tr("DevApp"));
-	hardwareApp=new QPushButton(tr("HardwareDriv"));
-	professionalApp=new QPushButton(tr("ProfessionalApp"));
-	otherApp=new QPushButton(tr("OtherApp"));
+    all = new QPushButton(tr("All"));
+	professional = new QPushButton(tr("Professional"));
+	network = new QPushButton(tr("Network"));
+	media = new QPushButton(tr("Media"));
+	driver = new QPushButton(tr("Driver"));
+	develop = new QPushButton(tr("Develop"));
+	other = new QPushButton(tr("Other"));
 
-	networkApp->setCheckable(true);
-
-	mediaApp->setCheckable(true);
-
-	gameApp->setCheckable(true);
-
-	graphicsApp->setCheckable(true);
-
-	wordsApp->setCheckable(true);
-
-	devApp->setCheckable(true);
-
-	hardwareApp->setCheckable(true);
-
-	professionalApp->setCheckable(true);
-
-	otherApp->setCheckable(true);
+    all->setCheckable(true);
+	professional->setCheckable(true);
+	network->setCheckable(true);
+	media->setCheckable(true);
+	driver->setCheckable(true);
+	develop->setCheckable(true);
+	other->setCheckable(true);
 
 	buttonWidget=new QWidget(_frame);
 	QHBoxLayout *hlayout=new QHBoxLayout(buttonWidget);
 
 	buttonGroup = new QButtonGroup(this);
-	buttonGroup->addButton(networkApp,0);
-	buttonGroup->addButton(mediaApp,1);
-	buttonGroup->addButton(gameApp,2);
-	buttonGroup->addButton(graphicsApp,3);
-	buttonGroup->addButton(wordsApp,4);
-	buttonGroup->addButton(devApp,5);
-	buttonGroup->addButton(hardwareApp,6);
-	buttonGroup->addButton(otherApp,7);
-	classifyList <<"web.txt"
-		<<"multimedia.txt"<<"game.txt"<<"graphics.txt"<<"word.txt"
-		<<"programming.txt"<<"driver.txt"<<"others.txt";
+	buttonGroup->addButton(all, 0);
+	buttonGroup->addButton(professional, 1);
+	buttonGroup->addButton(network, 2);
+	buttonGroup->addButton(media, 3);
+	buttonGroup->addButton(driver, 4);
+	buttonGroup->addButton(develop, 5);
+	buttonGroup->addButton(other, 6);
 
-
-	hlayout->addWidget(networkApp);
-	hlayout->addWidget(mediaApp);
-	hlayout->addWidget(gameApp);
-	hlayout->addWidget(graphicsApp);
-	hlayout->addWidget(wordsApp);
-	hlayout->addWidget(devApp);
-	hlayout->addWidget(hardwareApp);
-	hlayout->addWidget(otherApp);
+	hlayout->addWidget(all);
+	hlayout->addWidget(professional);
+	hlayout->addWidget(network);
+	hlayout->addWidget(media);
+	hlayout->addWidget(driver);
+	hlayout->addWidget(develop);
+	hlayout->addWidget(other);
 
 	hlayout->setSpacing(0);
 	hlayout->setContentsMargins(0, 0, 0, 0);
 
-	currentButton=networkApp;
 	buttonGroup->setExclusive(true);
+
+    all->setChecked(true);
 }
 
 void PackageWidget::setPictureFrameVisible(bool vis)
@@ -158,18 +132,6 @@ void PackageWidget::allResize()
 
 void PackageWidget::setCurrentButton(int id)
 {
-	currentButton = static_cast<QPushButton*>(buttonGroup->button(id));
-    tableView->proxy()->filterPkgClass(id);
     allResize();
 	emit clearSearch();
-}
-
-void PackageWidget::search(const QString& text)
-{
-	if (text.isEmpty())
-        //my comment
-		//tableView->resetModel(classifyList.at(buttonGroup->checkedId()));
-        ;
-	else
-		tableView->search(text);
 }

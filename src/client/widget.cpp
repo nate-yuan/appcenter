@@ -37,34 +37,12 @@ Widget::Widget(QWidget *parent) : QWidget(parent)
 
 	startpos = 0;
 	resultImage = QImage(size, QImage::Format_ARGB32_Premultiplied);
-	//resultImage = QImage(size, QImage::Format_ARGB32);
-	//	bgImage=QImage(size,QImage::Format_ARGB32_Premultiplied);
 	bgImage=QImage(size,QImage::Format_ARGB32);
 	timer = new QTimer(this);
 	connect(timer,SIGNAL(timeout()),this,SLOT(timedone()));
 	timer->setInterval(50);
 	timer->start();
 	composeImage();
-
-	//     QGraphicsScene *Scene = new QGraphicsScene;
-	//     Scene->setSceneRect(-800,-800,800,800);
-	//     Scene->setItemIndexMethod(QGraphicsScene::NoIndex);
-	//
-	//     butterfly = new Butterfly();
-	//     butterfly->setPos(-50,50);
-	//     Scene->addItem(butterfly);
-	//
-	//     QGraphicsView *View = new QGraphicsView(this);
-	//     View->setScene(Scene);
-	//     View->raise();
-
-	//View.setRenderHint(QPainter::Antialiasing);
-	//View.setBackgroundBrush(QPixmap("img"));
-}
-
-Widget::~Widget()
-{
-
 }
 
 void Widget::composeImage()
@@ -132,24 +110,11 @@ void Widget::timedone()
 void Widget::paintEvent( QPaintEvent *e )
 {
 	Q_UNUSED(e)
-	//if(mousePressed)
-	//qDebug()<<"update paintEvent";
 	QPainter p(this);
-
-
 
 	p.save();
 	p.drawImage(0,0,resultImage);
 	p.restore();
-
-	//p.begin(&resultImage);
-	/*p.setCompositionMode(QPainter::CompositionMode_DestinationIn);
-	  p.fillRect(rect(), QColor(0, 0, 0,254));
-	  p.fillRect(currentRect, QColor(0, 0, 0,100));
-	  */
-	//p.end();
-
-
 }
 
 void Widget::mouseReleaseEvent(QMouseEvent *e)
@@ -197,13 +162,6 @@ void Widget::mousePressEvent(QMouseEvent *e)
 {
 	Q_UNUSED(e)
 		mousePressed = true;
-	//int x=e->x();
-	//int y=e->y();
-	/*		if(firstrect.contains(x,y))
-			qDebug()<<"first rect";
-			if(secondrect.contains(x,y))
-			qDebug()<<"second rect";
-	 */
 	update();
 }
 

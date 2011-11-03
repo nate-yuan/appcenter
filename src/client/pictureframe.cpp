@@ -42,14 +42,7 @@ PictureFrame::~PictureFrame()
 
 void PictureFrame::switchPic(const QString& pic)
 {
-
-	QPixmap pix("images/ppstream.png");
-	QPixmap pix2("images/ppstream_small.png");
 	QString bigpic=pic;
 	bigpic.chop(6);
 	pictureLabel->setPixmap(QPixmap(bigpic));
 }
-
-//void PictureFrame::onMouseRelease()
-//{
-//}

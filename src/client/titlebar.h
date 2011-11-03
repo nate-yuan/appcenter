@@ -16,16 +16,16 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef _RFTITLEBAR_H_
-#define _RFTITLEBAR_H_
+#ifndef _TITLEBAR_H_
+#define _TITLEBAR_H_
 
 #include <QWidget>
 #include <QLineEdit>
 
-class RFTitleBar : public QWidget {
+class TitleBar : public QWidget {
 	Q_OBJECT
 	public:
-		RFTitleBar(QWidget* parent = NULL);
+		TitleBar(QWidget* parent = NULL);
 	signals:
 		void searchChanged (const QString & text);
 	public slots:
@@ -37,4 +37,4 @@ class RFTitleBar : public QWidget {
 };
 
 
-#endif // _RFTITLEBAR_H_
+#endif // _TITLEBAR_H_

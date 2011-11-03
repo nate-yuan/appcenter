@@ -27,7 +27,7 @@
 #define DB_PASSWORD "abc123"
 #define DB_TABLE "pkgtable"
 
-int Node::setStatus(int stat)
+void Node::setStatus(PackageStatus stat)
 {
     _oldstat = _status;
     _status = stat;

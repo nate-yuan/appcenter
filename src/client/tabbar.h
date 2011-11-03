@@ -16,8 +16,8 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef _RFTABBAR_H_
-#define _RFTABBAR_H_
+#ifndef _TABBAR_H_
+#define _TABBAR_H_
 
 #include <QTabBar>
 #include <QTimer>
@@ -25,12 +25,12 @@
 
 class QPropertyAnimation;
 
-class RFTabBar : public QTabBar {
+class TabBar : public QTabBar {
 	Q_OBJECT
 	Q_PROPERTY(qreal animValue READ animValue WRITE setAnimValue)
 
 	public:
-		RFTabBar(QWidget* parent = NULL);
+		TabBar(QWidget* parent = NULL);
 		qreal animValue() const;
 
 	protected:
@@ -66,4 +66,4 @@ class RFTabBar : public QTabBar {
 		bool _animateSwitch;
 };
 
-#endif // _RFTABBAR_H_
+#endif // _TABBAR_H_

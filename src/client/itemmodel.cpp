@@ -3,40 +3,37 @@
 bool SoftwareProxyModel::filterAcceptsRow(int sourceRow, \
         const QModelIndex &sourceParent) const
 {
-    QModelIndex pkgClassIndex = sourceModel()->index(sourceRow,3,sourceParent);
-    Node *node = static_cast<Node*>(pkgClassIndex.internalPointer());
+    QModelIndex sourceIndex;
+    QString name;
+    QString descr;
+    PackageStatus status;
+    PackageClass pclass;
+    int recom;
+    bool TEXT, STAT, CLASS, RECOM;
 
-    bool TEXT = node->name().append(node->descr()).contains(_pkg_search);
-    bool STAT = node->status() == _pkg_stat;
-    bool CLASS = node->pkgClass() == _pkg_class; 
-    if (_pkg_stat == -1)
+    sourceIndex = sourceModel()->index(sourceRow, NameColumn, sourceParent);
+    name = sourceIndex.data(Qt::UserRole + 1).toString();
+    descr = sourceIndex.data(Qt::UserRole + 2).toString();
+    status = static_cast<PackageStatus>(sourceIndex.data(Qt::UserRole + 3).toInt());
+    pclass = static_cast<PackageClass>(sourceIndex.data(Qt::UserRole + 4).toInt());
+    recom = sourceIndex.data(Qt::UserRole + 5).toInt();
+
+    TEXT = name.append(descr).contains(_pkg_search);
+    STAT = (status == _pkg_stat);
+    CLASS = (pclass == _pkg_class); 
+    RECOM = true;
+    if (_pkg_recom) //just show recommended
+        RECOM = recom; 
+
+    if (_pkg_both)
+        STAT = (status == INSTALLED || status == OLD);
+
+    if (_pkg_stat == ALLSTATUS)
         STAT = true;
-    if (_pkg_class == -1)
+    if (_pkg_class == ALLCLASS)
         CLASS = true;
-    return STAT && CLASS && TEXT;
+    return STAT && CLASS && TEXT && RECOM;
 }
-
-    /*
-QModelIndex SoftwareProxyModel::
-index(int row,int column, const QModelIndex & parent) const
-{
-	//Q_UNUSED(parent)
-	if(!hasIndex(row, column, parent))
-		return QModelIndex();
-    QModelIndex index = QSortFilterProxyModel::index(row, 1);
-    QString name = index.data(Qt::FontRole).toString();
-    Node *node = static_cast<ItemModel*>(sourceModel())->getNode(name);
-    qDebug() << "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT" << node->descr();
-    return createIndex(row, column, node);
-}
-    */
-
-/*
-Node * SoftwareProxyModel::getNode(QString name)
-{
-    return static_cast<ItemModel*>(SourceModel())->getNode(name);
-}
-*/
 
 ItemModel::ItemModel(QObject * parent)
 	:QAbstractTableModel(parent)
@@ -44,95 +41,75 @@ ItemModel::ItemModel(QObject * parent)
     _nodeList = NodeList::instance();
 }
 
-ItemModel::~ItemModel(){}
-
-Node * ItemModel::getNode(QString name)
+QVariant ItemModel::data(
+		const QModelIndex & index,
+		int role) const
 {
-    int i;
-    for (i = 0; i < _nodeList->count(); i++) {
-        if (_nodeList->at(i)->name() == name) 
-            return _nodeList->at(i);
-        return NULL;
-    }
-}
+    int column;
+    Node *node;
+    QString name;
 
-bool ItemModel::insertRows ( int row,int count, const QModelIndex & parent )
-{
-	Q_UNUSED(parent)
-	beginInsertRows(QModelIndex(), row, row + count - 1);
-	endInsertRows();
-	return true;
+	column = index.column();
+	node = (Node *)(index.internalPointer());
+    name = node->name();
+
+	if (NULL == node)
+		return QVariant();
+
+    if (role == Qt::UserRole + 1)
+        return name;
+
+    if (role == Qt::UserRole + 2)
+        return node->descr();
+
+    if (role == Qt::UserRole + 3)
+        return node->status();
+
+    if (role == Qt::UserRole + 4)
+        return node->pkgClass();
+
+    if (role == Qt::UserRole + 5)
+        return node->favor();
+
+	if (column == FavorColumn) {
+	    if(role == Qt::ToolTipRole)
+            return tr("Recommended");
+        if (node->favor())
+            return QPixmap("images/favourite.png")\
+                .scaled(ICONWIDTH,ICONHEIGH);
+        return QPixmap();
+	}
+
+	if (column == NameColumn)
+        if (role == Qt::DisplayRole)
+            return name; 
+
+	if (column == DescrColumn)
+        if (role == Qt::DisplayRole)
+            return node->descr();
+
+	return QVariant();
 }
 
 bool ItemModel::setData(const QModelIndex & index, const QVariant & value, int role )
 {
 	Q_UNUSED(role)
-	Node *v= (Node *)index.internalPointer();
-	v->setStatus(value.toInt());
-	qDebug() << v->status();
-	emit (dataChanged(index,index));
 	return true;
-}
-
-QVariant ItemModel::data(
-		const QModelIndex & index,
-		int role) const
-{
-	int column = index.column();
-	Node *node=(Node *)(index.internalPointer());
-	if (NULL == node)
-		return QVariant();
-
-    if (role == Qt::FontRole)
-        return node->name();
-    if (role == Qt::AccessibleTextRole)
-        return node->status();
-
-	if(role == Qt::UserRole && column == ButtonColumn)
-		return node->status();
-
-	if (role == Qt::DisplayRole && column == NameColumn)
-		return node->name();
-
-	if (role == Qt::DecorationRole&& column == NameColumn)
-		return node->descr();
-
-	if (role == Qt::DecorationRole&&column == IconColumn) {
-		if(!node->icon().isNull())
-			return node->icon().scaled(ICONWIDTH,ICONHEIGH);
-		else return QPixmap();
-	}
-
-	if (role == Qt::DisplayRole && column == SizeColumn) {
-		if (node->size() > 0) {
-			double size = node->size();
-			QString sizeStr = QString("%1M").arg(size,0,'f',2);
-			return sizeStr;
-		}
-		else
-			return QString("Unknow");
-	}
-	if (role == Qt::UserRole && column == SizeColumn) {
-        return node->progress();
-	}
-	if(role == Qt::ToolTipRole && column==IconColumn)
-		return tr("Icons");
-	return QVariant();
 }
 
 QVariant ItemModel::headerData(int section,
 		Qt::Orientation orientation,
 		int role) const
 {
-	if(section==0 && orientation==Qt::Horizontal){
-		if(role==Qt::DecorationRole)
-			return QPixmap(":/favourite.png");
-		if(role==Qt::DisplayRole)
-			return "";
-		if(role==Qt::ToolTipRole)
-			return tr("love");
-	}
-	return "header";
+    return "";
+}
+
+QModelIndex ItemModel::index(int row, int column, const QModelIndex & parent)const
+{
+	Q_UNUSED(parent)
+	if(!hasIndex(row, column, parent))
+		return QModelIndex();
+    return createIndex(row, column, _nodeList->at(row));
 }
 
 int ItemModel::rowCount(const QModelIndex &parent)const
@@ -147,10 +124,10 @@ int ItemModel::columnCount(const QModelIndex &parent)const {
 	return 4;
 }
 
-QModelIndex ItemModel::index(int row, int column, const QModelIndex & parent)const
+bool ItemModel::insertRows ( int row,int count, const QModelIndex & parent )
 {
 	Q_UNUSED(parent)
-	if(!hasIndex(row, column, parent))
-		return QModelIndex();
-    return createIndex(row, column, _nodeList->at(row));
+	beginInsertRows(QModelIndex(), row, row + count - 1);
+	endInsertRows();
+	return true;
 }
